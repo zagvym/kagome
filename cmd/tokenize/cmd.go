@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 
+	neologd "github.com/ikawaha/kagome-dict-ipa-neologd"
 	"github.com/ikawaha/kagome-dict/dict"
 	"github.com/ikawaha/kagome-dict/ipa"
 	"github.com/ikawaha/kagome-dict/uni"
@@ -59,7 +60,7 @@ func newOption(w io.Writer, eh flag.ErrorHandling) (o *option) {
 	o.flagSet.StringVar(&o.file, "file", "", "input file")
 	o.flagSet.StringVar(&o.dict, "dict", "", "dict")
 	o.flagSet.StringVar(&o.udict, "udict", "", "user dict")
-	o.flagSet.StringVar(&o.sysdict, "sysdict", "ipa", "system dict type (ipa|uni)")
+	o.flagSet.StringVar(&o.sysdict, "sysdict", "ipa", "system dict type (ipa|uni|neologd)")
 	o.flagSet.BoolVar(&o.simple, "simple", false, "display abbreviated dictionary contents")
 	o.flagSet.StringVar(&o.mode, "mode", "normal", "tokenize mode (normal|search|extended)")
 	o.flagSet.BoolVar(&o.split, "split", false, "use tiny sentence splitter")
@@ -79,7 +80,7 @@ func (o *option) parse(args []string) error {
 	if o.mode != "" && o.mode != "normal" && o.mode != "search" && o.mode != "extended" {
 		return fmt.Errorf("invalid argument: -mode %v", o.mode)
 	}
-	if o.sysdict != "" && o.sysdict != "ipa" && o.sysdict != "uni" {
+	if o.sysdict != "" && o.sysdict != "ipa" && o.sysdict != "uni" && o.sysdict != "neologd" {
 		return fmt.Errorf("invalid argument: -sysdict %v", o.sysdict)
 	}
 	return nil
@@ -112,6 +113,11 @@ func selectDict(path, sysdict string, shrink bool) (*dict.Dict, error) {
 			return uni.DictShrink(), nil
 		}
 		return uni.Dict(), nil
+	case "neologd":
+		if shrink {
+			return neologd.DictShrink(), nil
+		}
+		return neologd.Dict(), nil
 	}
 	return nil, fmt.Errorf("unknown dict type, %v", sysdict)
 }
